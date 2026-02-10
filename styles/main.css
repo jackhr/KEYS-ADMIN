@@ -1,0 +1,1003 @@
+:root {
+    --primary         : #e55f4c;
+    --primary-rgb     : rgb(229, 95, 76);
+    --primary-rgb-vals: 229, 95, 76;
+    --secondary       : #4cd4e6;
+    --black           : #232628;
+    --white           : #f5f5f5;
+    --grey-x-light    : #cdcdcd;
+    --grey-light      : #888888;
+    --grey-dark       : #676767;
+    --max-width       : 1140px;
+    --nav-height      : 135px;
+    --primary-font    : 'Montserrat', sans-serif;
+    --general-padding : 1rem;
+}
+
+*,
+*:before,
+*:after {
+    box-sizing : border-box;
+    font-family: var(--primary-font);
+}
+
+html,
+body {
+    scroll-behavior: smooth;
+    overflow-x     : hidden;
+    max-width      : 100vw;
+}
+
+body {
+    margin                 : 0;
+    -webkit-font-smoothing : antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color       : var(--secondary);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    text-transform: uppercase;
+}
+
+section {
+    background-color: var(--white);
+}
+
+a {
+    color          : var(--primary);
+    text-decoration: none;
+    transition     : color 0.3s;
+}
+
+a:hover {
+    color: var(--secondary);
+}
+
+a:focus:not(header a) {
+    color: var(--white);
+}
+
+svg {
+    width : 12px;
+    height: auto;
+}
+
+input {
+    width        : 100%;
+    height       : 40px;
+    border       : none;
+    border-radius: 2px;
+    background   : var(--white);
+    color        : var(--black);
+    font-weight  : 600;
+    padding      : 8px;
+}
+
+input.flatpickr-input {
+    text-transform: none;
+}
+
+.form-input.form-error {
+    border: solid 2px red !important;
+}
+
+.continue-btn {
+    display         : flex;
+    align-items     : center;
+    justify-content : center;
+    background-color: var(--primary);
+    color           : var(--white);
+    border          : solid 2px var(--primary);
+    font-weight     : 700;
+    cursor          : pointer;
+    height          : 48px;
+    transition      : color 0.3s, background-color 0.3s, border-color 0.3s;
+}
+
+.continue-btn:hover {
+    background-color: #fff;
+    color           : var(--primary);
+}
+
+div.inner {
+    max-width     : var(--max-width);
+    display       : flex;
+    flex-direction: column;
+    margin        : 0 auto;
+    padding       : var(--general-padding);
+    text-align    : center;
+}
+
+.general-header {
+    display            : flex;
+    flex-direction     : column;
+    align-items        : center;
+    position           : relative;
+    gap                : 12px;
+    min-height         : 300px;
+    background-position: center;
+    background-size    : cover;
+    background-repeat  : no-repeat;
+    color              : var(--white);
+    padding            : 15px;
+}
+
+.general-header h1 {
+    font-size  : 36px;
+    text-shadow: 0 1px 3px #000c;
+    line-height: 1.2;
+    font-weight: 700;
+    margin     : auto;
+}
+
+body>.overlay {
+    width           : 100%;
+    height          : 100%;
+    position        : fixed;
+    top             : 0;
+    left            : 0;
+    z-index         : 99;
+    opacity         : 0;
+    transition      : opacity 0.3s;
+    pointer-events  : none;
+    background-color: #00000080;
+}
+
+html.viewing-hamburger-menu {
+    overflow: hidden;
+}
+
+html.viewing-custom-select-options .overlay,
+html.viewing-hamburger-menu .overlay {
+    opacity       : 1;
+    pointer-events: all;
+}
+
+.input-container {
+    display       : flex;
+    flex-direction: column;
+    text-align    : left;
+    gap           : 15px;
+    font-weight   : 700;
+    text-transform: uppercase;
+    font-size     : 12px;
+    margin-bottom : 15px;
+    width         : 100%;
+}
+
+.input-container textarea,
+.input-container input {
+    background-color: #ebe9e5;
+    border          : 2px solid #ebe9e5;
+    color           : #888;
+    resize          : none;
+    transition      : all ease 0.3s;
+    outline         : none;
+    padding         : 12px;
+    margin          : 0;
+    font-weight     : 600;
+}
+
+.input-container textarea:focus,
+.input-container input:focus {
+    border-color    : var(--primary);
+    background-color: var(--white);
+}
+
+.input-container h6 {
+    font-size     : 12px;
+    text-transform: uppercase;
+    margin        : 0;
+}
+
+h6 sup {
+    margin-left: 4px;
+    color      : red;
+    font-size  : 12px;
+}
+
+#intro-section div.inner {
+    padding  : 36px 40px 90px;
+    max-width: unset;
+}
+
+.checkbox-container {
+    display        : flex;
+    align-items    : center;
+    justify-content: center;
+    width          : max-content;
+    margin-bottom  : 12px;
+    gap            : 8px;
+}
+
+.custom-checkbox {
+    position        : relative;
+    width           : 16px;
+    height          : 16px;
+    display         : inline-block;
+    cursor          : pointer;
+    background-color: var(--white);
+    border-radius   : 3px;
+}
+
+.custom-checkbox-label {
+    font-weight: 500;
+    font-size  : 14px;
+}
+
+.hidden-checkbox:checked+.custom-checkbox {
+    background-color: #000;
+}
+
+.hidden-checkbox:checked+.custom-checkbox::after {
+    content  : "\2713";
+    color    : yellow;
+    position : absolute;
+    left     : 50%;
+    top      : 50%;
+    transform: translate(-50%, -50%);
+    font-size: 16px;
+}
+
+.custom-select {
+    width        : 100%;
+    height       : 40px;
+    border       : none;
+    border-radius: 2px;
+    background   : var(--white);
+    color        : var(--black);
+    font-weight  : 600;
+    padding      : 8px;
+    position     : relative;
+    display      : flex;
+    align-items  : center;
+    cursor       : pointer;
+    margin-bottom: 12px;
+}
+
+.custom-select svg {
+    fill: var(--black) !important;
+}
+
+.custom-select>span {
+    margin   : 0 auto 0 8px;
+    font-size: 14px;
+}
+
+.custom-select-options {
+    position      : absolute;
+    top           : 40px;
+    left          : 0;
+    z-index       : 100;
+    background    : var(--white);
+    opacity       : 0;
+    pointer-events: none;
+    width         : 100%;
+    display       : flex;
+    flex-direction: column;
+    font-weight   : 500;
+    transition    : opacity 0.3s;
+}
+
+html.viewing-custom-select-options .custom-select.active .custom-select-options {
+    opacity       : 1;
+    pointer-events: all;
+}
+
+.custom-select-options span {
+    padding   : 8px;
+    cursor    : pointer;
+    transition: background 0.3s;
+    font-size : 14px;
+    background: #d2d2d2;
+}
+
+.custom-select-options span.selected {
+    background : #ccc;
+    font-weight: 800;
+}
+
+.custom-select-options span:hover {
+    background: var(--white);
+}
+
+header {
+    height    : var(--nav-height);
+    background: var(--white);
+}
+
+header div.inner {
+    flex-direction: row;
+    height        : 100%;
+}
+
+header div.inner>a,
+header div.inner img {
+    height: 100%;
+}
+
+header div.inner nav {
+    display    : flex;
+    align-items: center;
+    margin-left: auto;
+    gap        : 48px;
+    font-weight: 700;
+    font-size  : 20px;
+}
+
+#hamburger-button {
+    display        : none;
+    cursor         : pointer;
+    align-items    : center;
+    justify-content: center;
+    flex-direction : column;
+    transition     : opacity 0.3s ease-out;
+    pointer-events : none;
+    height         : fit-content;
+    margin         : auto 0 auto auto;
+}
+
+#hamburger-icon {
+    display        : flex;
+    flex-direction : column;
+    align-items    : center;
+    justify-content: space-between;
+    gap            : 7px;
+}
+
+.hamburger-line {
+    background   : var(--primary);
+    border-radius: 4px;
+    width        : 35px;
+    height       : 5px;
+}
+
+#hamburger-nav {
+    position        : absolute;
+    height          : 100vh;
+    background-color: var(--secondary);
+    color           : var(--white);
+    max-width       : 450px;
+    padding         : 48px 0;
+    width           : 0;
+    top             : 0;
+    right           : 0;
+    transition      : width 0.3s, padding 0.3s;
+    z-index         : 100;
+    overflow        : hidden;
+}
+
+#close-hamburger {
+    position : absolute;
+    cursor   : pointer;
+    font-size: 48px;
+    top      : 24px;
+    right    : 24px;
+    fill     : var(--white);
+    width    : 32px;
+    height   : 32px;
+}
+
+#hamburger-nav nav {
+    flex-direction: column;
+    align-items   : flex-start;
+    gap           : 24px;
+    color         : var(--white);
+}
+
+#hamburger-nav nav a {
+    color: var(--white);
+}
+
+#hamburger-nav nav a:hover {
+    color: var(--primary);
+}
+
+html.viewing-hamburger-menu #hamburger-nav {
+    width  : 100vw;
+    padding: 48px;
+}
+
+#intro-section {
+    background     : url("/assets/images/bg/car-under-mango-trees.avif") center no-repeat;
+    background-size: cover;
+}
+
+#intro-section form {
+    width     : 350px;
+    background: var(--primary);
+    padding   : 30px;
+    text-align: left;
+    border    : solid 2px var(--black);
+}
+
+#intro-section h2 {
+    margin-bottom : 7px;
+    font-size     : 16px;
+    font-weight   : 700;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+
+}
+
+#intro-section form button {
+    display       : flex;
+    width         : unset;
+    gap           : 8px;
+    border        : none;
+    border-radius : 4px;
+    background    : var(--black);
+    color         : var(--white);
+    font-weight   : 800;
+    text-transform: uppercase;
+    font-size     : 12px;
+    padding       : 16px 24px;
+    cursor        : pointer;
+    margin-top    : 36px;
+}
+
+#intro-section form svg {
+    fill: var(--white);
+}
+
+#feature-section {
+    background: var(--white);
+}
+
+#feature-section h1 {
+    font-size     : 30px;
+    margin        : 50px auto;
+    line-height   : 50px;
+    letter-spacing: 1px;
+}
+
+#intro-section h2:nth-of-type(2) {
+    margin-top: 18px;
+}
+
+#features {
+    display        : flex;
+    flex-wrap      : wrap;
+    justify-content: space-between;
+}
+
+.feature-container {
+    display: flex;
+    width  : 30%;
+    gap    : 16px;
+}
+
+.feature-container:nth-child(n+4) {
+    margin-top: 32px;
+}
+
+.feature-icon {
+    min-width    : 54px;
+    width        : 54px;
+    height       : 54px;
+    padding      : 12px;
+    background   : var(--primary);
+    border-radius: 50%;
+}
+
+.feature-icon svg {
+    width : 100%;
+    height: 100%;
+}
+
+.feature-info {
+    text-align: left;
+}
+
+.feature-info h2 {
+    text-transform: none;
+    margin        : 0;
+    font-weight   : 400;
+    font-size     : 18px;
+}
+
+.feature-info p {
+    line-height: 20px;
+    color      : var(--grey-light);
+    font-weight: 600;
+    font-size  : 13px;
+}
+
+#landing-cars-section {
+    background           : url("/assets/images/bg/shirley-heights-antigua-view.avif") center no-repeat;
+    background-position  : center;
+    background-size      : cover;
+    background-attachment: fixed;
+}
+
+#landing-cars-section div.inner {
+    padding-top   : 80px;
+    padding-bottom: 50px;
+}
+
+#cars {
+    display        : flex;
+    flex-wrap      : wrap;
+    gap            : 30px;
+    justify-content: space-between;
+    max-width      : var(--max-width);
+    margin         : auto;
+}
+
+.car-container {
+    background-color: #fff;
+    width           : calc(33.33% - 24px);
+    padding         : 15px;
+    position        : relative;
+    overflow        : hidden;
+    text-align      : left;
+    height          : 390px;
+    cursor          : pointer;
+    min-width       : 300px;
+    margin          : auto;
+    color           : var(--black);
+}
+
+.car-container:hover,
+.car-container:focus {
+    color: var(--black);
+}
+
+.car-container .overlay {
+    position       : absolute;
+    top            : 0;
+    left           : 0;
+    height         : 100%;
+    width          : 100%;
+    display        : flex;
+    align-items    : center;
+    justify-content: center;
+}
+
+.car-container .overlay div {
+    transition: all ease-in-out 0.5s;
+    background: var(--primary);
+    height    : 300px;
+    width     : calc(var(--max-width)/4);
+    opacity   : 0;
+}
+
+.car-container:hover .overlay div {
+    opacity: 1;
+    height : 450px;
+    width  : calc(var(--max-width)/3);
+}
+
+.car-container .top,
+.car-container .bottom {
+    position: relative;
+    height  : 50%;
+    overflow: hidden;
+}
+
+.car-container .top {
+    display: flex;
+    padding: 0 20px 12px;
+}
+
+.car-container .top .left {
+    width         : 100%;
+    display       : flex;
+    flex-direction: column;
+}
+
+.car-container .top .left h2 {
+    margin        : 0;
+    font-size     : 22px;
+    text-transform: capitalize;
+}
+
+.car-container .top .left h3 {
+    margin   : 0;
+    font-size: 14px;
+}
+
+.car-container .top .left>div {
+    display       : flex;
+    flex-direction: column;
+    background    : var(--primary);
+    margin        : auto 24px 0 0;
+    color         : var(--white);
+    font-weight   : 800;
+    font-size     : 12px;
+    padding       : 8px 12px;
+    transition    : background-color ease 0.5s;
+}
+
+.car-container:hover .top .left>div {
+    background-color: var(--black);
+}
+
+.car-container .top .left>div>* {
+    transition: color ease 0.5s;
+}
+
+.car-container:hover .top .left>div>* {
+    color: var(--primary);
+}
+
+.car-container .top .left>div span:nth-child(2) {
+    font-size: 24px;
+}
+
+.car-container .top .left>div span:last-child {
+    font-size: 15px;
+}
+
+.car-container .top .right {
+    display       : flex;
+    flex-direction: column;
+    color         : var(--grey-dark);
+    font-size     : 13px;
+    gap           : 8px;
+    min-width     : max-content;
+}
+
+.car-container .top .right div {
+    display    : flex;
+    align-items: center;
+    gap        : 8px;
+}
+
+.car-container svg {
+    width     : 20px;
+    height    : 20px;
+    fill      : var(--primary);
+    transition: fill 0.3s;
+}
+
+.car-container:hover svg {
+    fill: var(--black);
+}
+
+.car-container .top .right div span {
+    font-weight: 500;
+}
+
+.car-container img {
+    width     : 100%;
+    height    : 100%;
+    object-fit: cover;
+}
+
+#cars+a {
+    margin     : 50px auto 0;
+    width      : max-content;
+    font-size  : 16px;
+    padding    : 18px 25px;
+    background : var(--primary);
+    color      : var(--white);
+    cursor     : pointer;
+    font-weight: 500;
+}
+
+#testimonial-section div.inner {
+    padding: 75px var(--general-padding);
+}
+
+#testimonials {
+    display: flex;
+    gap    : 24px;
+}
+
+.testimonial {
+    display       : flex;
+    height        : 345px;
+    width         : 100%;
+    background    : var(--primary);
+    color         : var(--white);
+    padding       : 30px;
+    gap           : 12px;
+    font-style    : italic;
+    font-size     : 18px;
+    font-weight   : 600;
+    letter-spacing: -0.75px;
+}
+
+.testimonial>div {
+    display       : flex;
+    flex-direction: column;
+}
+
+.testimonial>div span {
+    font-style : normal;
+    color      : var(--grey-dark);
+    margin-top : 12px;
+    white-space: nowrap;
+}
+
+.testimonial svg {
+    height   : 36px;
+    min-width: 36px;
+    fill     : var(--grey-x-light);
+}
+
+.testimonial svg:last-child {
+    margin-top: auto;
+}
+
+.testimonial p {
+    margin: 0;
+}
+
+#contact-banner {
+    background-color: var(--primary);
+    display         : flex;
+    align-items     : center;
+    color           : var(--black);
+    height          : 30px;
+}
+
+#contact-banner h1,
+#contact-banner a {
+    margin     : 0;
+    font-size  : 24px;
+    font-weight: 700;
+}
+
+#contact-banner a {
+    margin-left: auto;
+    color      : var(--black);
+}
+
+#contact-banner div {
+    border          : solid 2px var(--white);
+    border-radius   : 4px;
+    transition      : background-color 0.3s;
+    background-color: var(--primary);
+    cursor          : pointer;
+    padding         : 12px 18px;
+    margin-left     : 24px;
+    font-weight     : 600;
+}
+
+#contact-banner div:hover {
+    background-color: var(--white);
+}
+
+footer {
+    background-color: var(--black);
+    color           : var(--white);
+}
+
+footer div {
+    display       : flex;
+    flex-direction: column;
+}
+
+footer div.inner>div:first-child {
+    margin         : 60px 0;
+    flex-direction : row;
+    justify-content: space-between;
+    height         : 200px
+}
+
+footer div.inner>div:first-child>div {
+    width: 100%;
+}
+
+footer h6 {
+    font-size: 14px;
+    margin   : 0 0 14px;
+    width    : max-content;
+}
+
+footer ul {
+    list-style-type: none;
+    text-align     : left;
+    padding        : 0;
+    margin         : 0;
+    font-size      : 14px;
+    font-weight    : 500;
+    line-height    : 1.5;
+    letter-spacing : 0.67px;
+}
+
+footer ul li.confirmation-link {
+    margin-bottom: 8px;
+}
+
+.footer-logo {
+    height         : 200px;
+    padding        : 12px;
+    display        : flex;
+    align-items    : center;
+    justify-content: center;
+}
+
+.footer-logo div {
+    padding: 24px;
+}
+
+.footer-logo img {
+    height: auto;
+    width : 160px;
+}
+
+.footer-contact {
+    align-items: flex-end;
+}
+
+footer .contact-link {
+    flex-direction: row;
+    gap           : 4px;
+    margin-bottom : 12px;
+}
+
+div#copyright {
+    font-size  : 13px;
+    color      : var(--grey-light);
+    padding-top: 20px;
+    border-top : solid 1px var(--grey-dark);
+}
+
+table {
+    width         : 100%;
+    margin-top    : 20px;
+    border-spacing: 0 2px;
+    font-size     : 14px;
+    font-weight   : 500;
+    color         : var(--grey-light);
+}
+
+th {
+    text-transform: uppercase;
+    font-size     : 12px;
+    color         : var(--black);
+}
+
+th,
+td {
+    padding         : 12px;
+    text-align      : left;
+    background-color: #f9f9f9;
+}
+
+tr:hover {
+    background-color: #f5f5f5;
+}
+
+td:first-child {
+    min-width: 150px;
+}
+
+table tbody tr:last-child {
+    font-weight: 600;
+    color      : var(--black);
+}
+
+table tr th:last-child,
+table tr td:last-child {
+    text-align: right;
+}
+
+@media screen and (max-width: 991px) {
+    :root {
+        --nav-height: 110px;
+    }
+
+    header div.inner>nav {
+        display: none;
+    }
+
+    #hamburger-button {
+        display       : flex;
+        pointer-events: all;
+    }
+
+    #intro-section div.inner {
+        padding        : 36px 40px 36px;
+        align-items    : center;
+        justify-content: center;
+    }
+
+    #features {
+        flex-direction: column;
+        gap           : 32px;
+    }
+
+    .feature-container:nth-child(n+4) {
+        margin-top: 0;
+    }
+
+    .feature-container {
+        width: 100%;
+    }
+}
+
+@media screen and (max-width: 768px) {
+
+    :root {
+        --nav-height     : 80px;
+        --general-padding: 0.75rem;
+    }
+
+    #intro-section div.inner {
+        padding: 24px;
+    }
+
+    #intro-section form {
+        max-width       : 350px;
+        width           : 100%;
+        background-color: rgba(var(--primary-rgb-vals), 0.6);
+    }
+
+    footer div.inner>div:first-child {
+        flex-direction: column;
+        height        : fit-content;
+        text-align    : center;
+        gap           : 18px;
+        margin        : 30px 0;
+    }
+
+    .footer-nav,
+    .footer-contact {
+        align-items: center;
+    }
+
+    footer ul {
+        display              : grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-rows   : 1fr 1fr;
+        gap                  : 12px 0;
+        list-style           : none;
+        margin-top           : 12px;
+    }
+
+    footer ul li.confirmation-link {
+        margin-bottom: 0;
+    }
+
+}
+
+@media screen and (max-width: 480px) {
+    footer ul {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows   : repeat(3, 1fr);
+        gap                  : 12px;
+    }
+
+    footer ul li:nth-child(1) {
+        grid-column: 1;
+        grid-row   : 1;
+    }
+
+    footer ul li:nth-child(2) {
+        grid-column: 1;
+        grid-row   : 2;
+    }
+
+    footer ul li:nth-child(3) {
+        grid-column: 1;
+        grid-row   : 3;
+    }
+
+    footer ul li:nth-child(4) {
+        grid-column: 2;
+        grid-row   : 1;
+    }
+
+    footer ul li:nth-child(5) {
+        grid-column: 2;
+        grid-row   : 2;
+    }
+
+    footer ul li:nth-child(6) {
+        grid-column: 2;
+        grid-row   : 3;
+    }
+
+    footer ul li:nth-child(n+4) {
+        text-align: right;
+    }
+}
