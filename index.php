@@ -67,6 +67,23 @@ function detect_value_kind($column_name)
     return 'amount';
 }
 
+function resolve_vehicle_image_url($slug)
+{
+    $safe_slug = trim((string) $slug);
+    if ($safe_slug === '') return '/assets/images/logo.avif';
+
+    $base_dir = __DIR__ . '/assets/images/vehicles';
+    $extensions = ['avif', 'webp', 'jpg', 'jpeg', 'png'];
+    foreach ($extensions as $ext) {
+        $file = $base_dir . '/' . $safe_slug . '.' . $ext;
+        if (file_exists($file)) {
+            return '/assets/images/vehicles/' . $safe_slug . '.' . $ext;
+        }
+    }
+
+    return '/assets/images/logo.avif';
+}
+
 function normalize_discount_row($row, $field_map)
 {
     if (!$row || !$field_map) return null;
@@ -119,6 +136,10 @@ $vehicles = [];
 $vehicles_query = "SELECT * FROM vehicles ORDER BY name ASC";
 $vehicles_result = mysqli_query($con, $vehicles_query);
 while ($row = mysqli_fetch_assoc($vehicles_result)) $vehicles[] = $row;
+foreach ($vehicles as &$vehicle) {
+    $vehicle['image_url'] = resolve_vehicle_image_url($vehicle['slug'] ?? '');
+}
+unset($vehicle);
 
 $vehicle_columns = get_table_columns($con, 'vehicles');
 
@@ -478,7 +499,10 @@ $discounts_config = [
             <aside class="admin-card vehicle-list">
                 <div class="vehicle-list-header">
                     <h2>Vehicles</h2>
-                    <span class="vehicle-count"><?php echo $total_count; ?></span>
+                    <div class="vehicle-list-actions">
+                        <span class="vehicle-count" id="vehicle-count"><?php echo $total_count; ?></span>
+                        <button type="button" class="admin-add-btn" id="vehicle-add">Add Vehicle</button>
+                    </div>
                 </div>
                 <div class="vehicle-items">
                     <?php foreach ($vehicles as $vehicle) {
@@ -558,6 +582,17 @@ $discounts_config = [
                                 <input type="text" name="slug" required>
                             </label>
                         </div>
+                    </div>
+
+                    <div class="admin-group">
+                        <h3>Image</h3>
+                        <div class="admin-grid">
+                            <label class="input-container">
+                                <h6>Upload Vehicle Image</h6>
+                                <input type="file" name="image_file" accept=".avif,.webp,.jpg,.jpeg,.png,image/avif,image/webp,image/jpeg,image/png">
+                            </label>
+                        </div>
+                        <p class="field-hint">Image file is saved using the current slug when you click Save Changes.</p>
                     </div>
 
                     <div class="admin-group">

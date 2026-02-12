@@ -124,13 +124,16 @@ const initVehicles = () => {
     );
 
     const form = document.getElementById("vehicle-form");
+    if (!form) return;
     const emptyState = document.querySelector(".vehicle-editor .editor-empty");
     const statusEl = document.getElementById("vehicle-status");
     const saveBtn = form.querySelector(".admin-save");
     const resetBtn = form.querySelector(".admin-reset");
-    const listItems = Array.from(document.querySelectorAll(".vehicle-item"));
+    const addBtn = document.getElementById("vehicle-add");
+    const listWrap = document.querySelector(".vehicle-items");
     const searchInput = document.getElementById("vehicle-search");
     const noResults = document.querySelector(".vehicle-empty");
+    const countEl = document.getElementById("vehicle-count");
 
     if (!form || !saveBtn || !resetBtn || !statusEl) return;
 
@@ -148,7 +151,8 @@ const initVehicles = () => {
         ac: form.querySelector('[name="ac"]'),
         fourwd: form.querySelector('[name="4wd"]'),
         showing: form.querySelector('[name="showing"]'),
-        landing_order: form.querySelector('[name="landing_order"]')
+        landing_order: form.querySelector('[name="landing_order"]'),
+        image_file: form.querySelector('[name="image_file"]')
     };
 
     const preview = {
@@ -179,13 +183,32 @@ const initVehicles = () => {
         tagEl.classList.toggle("tag-off", !enabled);
     };
 
+    const escapeVehicleText = (value) => {
+        if (value === null || value === undefined) return "";
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/\"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    };
+
+    const withCacheBust = (url) => {
+        if (!url) return url;
+        return `${url}${url.includes("?") ? "&" : "?"}v=${Date.now()}`;
+    };
+
+    const resolveImageSrc = (vehicle, bustCache = false) => {
+        const src = vehicle.image_url || (vehicle.slug ? `/assets/images/vehicles/${vehicle.slug}.avif` : "/assets/images/logo.avif");
+        return bustCache ? withCacheBust(src) : src;
+    };
+
     const updatePreview = (vehicle) => {
         if (!vehicle) return;
         const name = vehicle.name || "Vehicle";
         const type = vehicle.type || "Type";
         const price = vehicle.base_price_USD ?? 0;
-        const slug = vehicle.slug || "";
-        const imgSrc = slug ? `/assets/images/vehicles/${slug}.avif` : "/assets/images/logo.avif";
+        const imgSrc = resolveImageSrc(vehicle);
 
         if (preview.title) preview.title.textContent = name;
         if (preview.subtitle) preview.subtitle.textContent = type;
@@ -219,6 +242,7 @@ const initVehicles = () => {
         fields.fourwd.checked = boolFromValue(vehicle["4wd"]);
         fields.showing.checked = boolFromValue(vehicle.showing);
         fields.landing_order.value = vehicle.landing_order ?? "";
+        if (fields.image_file) fields.image_file.value = "";
         ADMIN_PORTAL.isHydrating = false;
     };
 
@@ -242,9 +266,62 @@ const initVehicles = () => {
         };
     };
 
+    const getListItems = () => Array.from(document.querySelectorAll(".vehicle-item"));
+
+    const buildVehicleListItem = (vehicle) => {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.className = "vehicle-item";
+        item.dataset.vehicleId = String(vehicle.id);
+        item.dataset.search = buildSearchKey(vehicle);
+
+        const showingEnabled = boolFromValue(vehicle.showing);
+        const landingEnabled = vehicle.landing_order !== null && vehicle.landing_order !== "" && vehicle.landing_order !== undefined;
+        const landingLabel = landingEnabled ? `Landing #${vehicle.landing_order}` : "Landing Hidden";
+        const showingClass = showingEnabled ? "tag-on" : "tag-off";
+        const landingClass = landingEnabled ? "tag-on" : "tag-off";
+        const transmission = boolFromValue(vehicle.manual) ? "Manual" : "Automatic";
+
+        item.innerHTML = `
+            <div class="vehicle-item-top">
+                <div>
+                    <span class="vehicle-name">${escapeVehicleText(vehicle.name || "Vehicle")}</span>
+                    <span class="vehicle-type">${escapeVehicleText(vehicle.type || "")}</span>
+                </div>
+                <span class="vehicle-price">USD$${escapeVehicleText(String(vehicle.base_price_USD ?? 0))}/day</span>
+            </div>
+            <div class="vehicle-item-details">
+                <span class="vehicle-seats">${escapeVehicleText(String(vehicle.people ?? 0))} seats</span>
+                <span class="vehicle-transmission">${escapeVehicleText(transmission)}</span>
+            </div>
+            <div class="vehicle-item-tags">
+                <span class="vehicle-tag showing-tag ${showingClass}">Showing</span>
+                <span class="vehicle-tag landing-tag ${landingClass}">${escapeVehicleText(landingLabel)}</span>
+            </div>
+        `;
+
+        return item;
+    };
+
+    const updateVehicleListCount = () => {
+        if (!countEl) return;
+        countEl.textContent = String(ADMIN_PORTAL.vehicleMap.size);
+    };
+
     const updateListItem = (vehicle) => {
-        const item = document.querySelector(`.vehicle-item[data-vehicle-id="${vehicle.id}"]`);
-        if (!item) return;
+        let item = document.querySelector(`.vehicle-item[data-vehicle-id="${vehicle.id}"]`);
+        if (!item) {
+            item = buildVehicleListItem(vehicle);
+            if (listWrap) {
+                if (noResults && noResults.parentNode === listWrap) {
+                    listWrap.insertBefore(item, noResults);
+                } else {
+                    listWrap.appendChild(item);
+                }
+            }
+            updateVehicleListCount();
+            return;
+        }
 
         const nameEl = item.querySelector(".vehicle-name");
         const typeEl = item.querySelector(".vehicle-type");
@@ -275,7 +352,7 @@ const initVehicles = () => {
         if (!vehicle) return;
 
         ADMIN_PORTAL.activeId = String(id);
-        listItems.forEach((item) => item.classList.toggle("active", item.dataset.vehicleId === String(id)));
+        getListItems().forEach((item) => item.classList.toggle("active", item.dataset.vehicleId === String(id)));
 
         if (emptyState) emptyState.hidden = true;
         form.hidden = false;
@@ -286,10 +363,11 @@ const initVehicles = () => {
     };
 
     const filterList = (term) => {
+        const items = getListItems();
         let visibleCount = 0;
         const query = term.toLowerCase();
 
-        listItems.forEach((item) => {
+        items.forEach((item) => {
             const haystack = (item.dataset.search || "").toLowerCase();
             const match = haystack.includes(query);
             item.hidden = !match;
@@ -299,6 +377,30 @@ const initVehicles = () => {
         if (noResults) {
             noResults.hidden = query.length === 0 || visibleCount > 0;
         }
+    };
+
+    const uploadVehicleImage = async (vehicle) => {
+        const file = fields.image_file && fields.image_file.files && fields.image_file.files[0]
+            ? fields.image_file.files[0]
+            : null;
+        if (!file) return vehicle;
+
+        const payload = new FormData();
+        payload.append("vehicle_id", String(vehicle.id));
+        payload.append("image", file);
+
+        const response = await fetch("/includes/admin-vehicle-image.php", {
+            method: "POST",
+            body: payload
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || "Image upload failed.");
+        }
+
+        const updatedVehicle = { ...vehicle, image_url: result.image_url };
+        if (fields.image_file) fields.image_file.value = "";
+        return updatedVehicle;
     };
 
     const saveVehicle = async () => {
@@ -327,10 +429,28 @@ const initVehicles = () => {
                 return;
             }
 
-            ADMIN_PORTAL.vehicleMap.set(String(result.vehicle.id), result.vehicle);
-            updateListItem(result.vehicle);
-            fillForm(result.vehicle);
-            updatePreview(result.vehicle);
+            let updatedVehicle = result.vehicle;
+            const existingVehicle = ADMIN_PORTAL.vehicleMap.get(String(updatedVehicle.id));
+            if (existingVehicle && existingVehicle.image_url && !updatedVehicle.image_url) {
+                updatedVehicle.image_url = existingVehicle.image_url;
+            }
+
+            try {
+                updatedVehicle = await uploadVehicleImage(updatedVehicle);
+            } catch (imageError) {
+                ADMIN_PORTAL.vehicleMap.set(String(updatedVehicle.id), updatedVehicle);
+                updateListItem(updatedVehicle);
+                fillForm(updatedVehicle);
+                updatePreview(updatedVehicle);
+                setDirty(false);
+                setStatus(`Vehicle saved, image upload failed: ${imageError.message}`, "error");
+                return;
+            }
+
+            ADMIN_PORTAL.vehicleMap.set(String(updatedVehicle.id), updatedVehicle);
+            updateListItem(updatedVehicle);
+            fillForm(updatedVehicle);
+            updatePreview(updatedVehicle);
             setDirty(false);
             setStatus("Saved", "success");
         } catch (error) {
@@ -349,8 +469,67 @@ const initVehicles = () => {
         setStatus("Changes reset.", "info");
     };
 
-    listItems.forEach((item) => {
-        item.addEventListener("click", () => {
+    const createVehicle = async () => {
+        if (ADMIN_PORTAL.isDirty && !window.confirm("Discard unsaved changes and create a new vehicle?")) {
+            return;
+        }
+        setStatus("Creating vehicle...", "info");
+        if (addBtn) addBtn.disabled = true;
+
+        const seed = Date.now();
+        const payload = {
+            name: "New Vehicle",
+            type: "car",
+            slug: `vehicle_${seed}`,
+            base_price_USD: 0,
+            insurance: 0,
+            people: 4,
+            bags: 0,
+            doors: 4,
+            manual: 0,
+            ac: 1,
+            "4wd": 0,
+            showing: 1,
+            landing_order: null
+        };
+
+        try {
+            const response = await fetch("/includes/admin-vehicles.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    action: "create_vehicle",
+                    vehicle: payload
+                })
+            });
+
+            const result = await response.json();
+            if (!response.ok || !result.success) {
+                setStatus(result.message || "Create failed.", "error");
+                return;
+            }
+
+            const vehicle = result.vehicle;
+            ADMIN_PORTAL.vehicleMap.set(String(vehicle.id), vehicle);
+            updateListItem(vehicle);
+            filterList(searchInput ? searchInput.value.trim() : "");
+            setActive(vehicle.id);
+            setDirty(true);
+            setStatus("Vehicle created. Update details and save.", "info");
+        } catch (error) {
+            setStatus("Network error.", "error");
+        } finally {
+            if (addBtn) addBtn.disabled = false;
+        }
+    };
+
+    if (listWrap) {
+        listWrap.addEventListener("click", (event) => {
+            const item = event.target.closest(".vehicle-item");
+            if (!item || !listWrap.contains(item)) return;
+
             const nextId = item.dataset.vehicleId;
             if (String(nextId) === String(ADMIN_PORTAL.activeId)) return;
 
@@ -360,7 +539,7 @@ const initVehicles = () => {
 
             setActive(nextId);
         });
-    });
+    }
 
     form.addEventListener("submit", (event) => {
         event.preventDefault();
@@ -375,6 +554,7 @@ const initVehicles = () => {
 
     saveBtn.addEventListener("click", saveVehicle);
     resetBtn.addEventListener("click", resetForm);
+    if (addBtn) addBtn.addEventListener("click", createVehicle);
 
     if (searchInput) {
         searchInput.addEventListener("input", (event) => {
@@ -382,8 +562,9 @@ const initVehicles = () => {
         });
     }
 
-    if (listItems.length > 0) {
-        setActive(listItems[0].dataset.vehicleId);
+    const initialItems = getListItems();
+    if (initialItems.length > 0) {
+        setActive(initialItems[0].dataset.vehicleId);
     }
 };
 
