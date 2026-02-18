@@ -129,6 +129,7 @@ const initVehicles = () => {
     const statusEl = document.getElementById("vehicle-status");
     const saveBtn = form.querySelector(".admin-save");
     const resetBtn = form.querySelector(".admin-reset");
+    const deleteBtn = form.querySelector(".admin-delete");
     const addBtn = document.getElementById("vehicle-add");
     const listWrap = document.querySelector(".vehicle-items");
     const searchInput = document.getElementById("vehicle-search");
@@ -359,6 +360,8 @@ const initVehicles = () => {
         fillForm(vehicle);
         updatePreview(vehicle);
         setDirty(false);
+        if (resetBtn) resetBtn.disabled = false;
+        if (deleteBtn) deleteBtn.disabled = false;
         setStatus("");
     };
 
@@ -469,6 +472,82 @@ const initVehicles = () => {
         setStatus("Changes reset.", "info");
     };
 
+    const removeListItem = (id) => {
+        const item = document.querySelector(`.vehicle-item[data-vehicle-id="${id}"]`);
+        if (item) item.remove();
+        updateVehicleListCount();
+    };
+
+    const deleteVehicle = async () => {
+        if (!ADMIN_PORTAL.activeId) return;
+        const targetId = String(ADMIN_PORTAL.activeId);
+        const vehicle = ADMIN_PORTAL.vehicleMap.get(targetId);
+        if (!vehicle) return;
+
+        if (ADMIN_PORTAL.isDirty && !window.confirm("Discard unsaved changes and delete this vehicle?")) {
+            return;
+        }
+
+        const label = vehicle.name ? `"${vehicle.name}"` : `#${targetId}`;
+        if (!window.confirm(`Delete vehicle ${label}? This cannot be undone.`)) {
+            return;
+        }
+
+        setStatus("Deleting...", "info");
+        if (saveBtn) saveBtn.disabled = true;
+        if (resetBtn) resetBtn.disabled = true;
+        if (deleteBtn) deleteBtn.disabled = true;
+
+        try {
+            const response = await fetch("/includes/admin-vehicles.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    action: "delete_vehicle",
+                    vehicle_id: parseInt(targetId, 10)
+                })
+            });
+
+            const result = await response.json();
+            if (!response.ok || !result.success) {
+                setStatus(result.message || "Delete failed.", "error");
+                if (resetBtn) resetBtn.disabled = false;
+                if (deleteBtn) deleteBtn.disabled = false;
+                saveBtn.disabled = !ADMIN_PORTAL.isDirty;
+                return;
+            }
+
+            ADMIN_PORTAL.vehicleMap.delete(targetId);
+            removeListItem(targetId);
+            ADMIN_PORTAL.activeId = null;
+
+            const activeFilter = searchInput ? searchInput.value.trim() : "";
+            filterList(activeFilter);
+
+            const visibleItems = getListItems().filter((item) => !item.hidden);
+            const fallbackItems = getListItems();
+            const next = visibleItems[0] || fallbackItems[0] || null;
+
+            if (next) {
+                setActive(next.dataset.vehicleId);
+                setStatus("Vehicle deleted.", "success");
+            } else {
+                form.hidden = true;
+                if (emptyState) emptyState.hidden = false;
+                if (noResults) noResults.hidden = true;
+                setDirty(false);
+                setStatus("Vehicle deleted.", "success");
+            }
+        } catch (error) {
+            setStatus("Network error.", "error");
+            if (resetBtn) resetBtn.disabled = false;
+            if (deleteBtn) deleteBtn.disabled = false;
+            saveBtn.disabled = !ADMIN_PORTAL.isDirty;
+        }
+    };
+
     const createVehicle = async () => {
         if (ADMIN_PORTAL.isDirty && !window.confirm("Discard unsaved changes and create a new vehicle?")) {
             return;
@@ -554,6 +633,7 @@ const initVehicles = () => {
 
     saveBtn.addEventListener("click", saveVehicle);
     resetBtn.addEventListener("click", resetForm);
+    if (deleteBtn) deleteBtn.addEventListener("click", deleteVehicle);
     if (addBtn) addBtn.addEventListener("click", createVehicle);
 
     if (searchInput) {

@@ -1023,6 +1023,29 @@
     color       : var(--primary);
 }
 
+.admin-delete {
+    border        : 2px solid #c84c3e;
+    background    : transparent;
+    color         : #c84c3e;
+    text-transform: uppercase;
+    font-weight   : 700;
+    height        : 48px;
+    padding       : 0 18px;
+    cursor        : pointer;
+    transition    : border-color 0.3s, color 0.3s, background 0.3s;
+}
+
+.admin-delete:hover {
+    border-color: #b1382c;
+    color       : #b1382c;
+    background  : rgba(200, 76, 62, 0.06);
+}
+
+.admin-delete:disabled {
+    opacity: 0.6;
+    cursor : not-allowed;
+}
+
 #vehicle-status {
     margin-left   : auto;
     font-size     : 12px;

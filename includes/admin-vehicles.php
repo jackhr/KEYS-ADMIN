@@ -182,8 +182,97 @@ if (!is_array($data)) {
 
 $action = $data['action'] ?? '';
 
-if ($action !== 'update_vehicle' && $action !== 'create_vehicle') {
+if ($action !== 'update_vehicle' && $action !== 'create_vehicle' && $action !== 'delete_vehicle') {
     send_json(['success' => false, 'message' => 'Unsupported action.'], 400);
+}
+
+if ($action === 'delete_vehicle') {
+    $id = isset($data['vehicle_id']) ? (int) $data['vehicle_id'] : 0;
+    if ($id <= 0) {
+        send_json(['success' => false, 'message' => 'Invalid vehicle id.'], 400);
+    }
+
+    $existing = fetch_vehicle($con, $id);
+    if (!$existing) {
+        send_json(['success' => false, 'message' => 'Vehicle not found.'], 404);
+    }
+
+    $booking_count = 0;
+    if (table_exists($con, 'order_requests')) {
+        $count_stmt = $con->prepare("SELECT COUNT(*) AS total FROM order_requests WHERE car_id = ?");
+        if ($count_stmt) {
+            $count_stmt->bind_param('i', $id);
+            $count_stmt->execute();
+            $count_result = $count_stmt->get_result();
+            $count_row = $count_result ? $count_result->fetch_assoc() : null;
+            $booking_count = (int) ($count_row['total'] ?? 0);
+            $count_stmt->close();
+        }
+    }
+
+    if ($booking_count > 0) {
+        send_json([
+            'success' => false,
+            'message' => "Cannot delete vehicle because {$booking_count} booking(s) are associated with it.",
+            'booking_count' => $booking_count
+        ], 409);
+    }
+
+    try {
+        $con->begin_transaction();
+
+        if (table_exists($con, 'vehicle_discounts')) {
+            $discount_stmt = $con->prepare("DELETE FROM vehicle_discounts WHERE vehicle_id = ?");
+            if ($discount_stmt) {
+                $discount_stmt->bind_param('i', $id);
+                if (!$discount_stmt->execute()) {
+                    $error = $discount_stmt->error;
+                    $discount_stmt->close();
+                    throw new Exception("Failed to delete vehicle discounts: {$error}");
+                }
+                $discount_stmt->close();
+            }
+        }
+
+        $delete_stmt = $con->prepare("DELETE FROM vehicles WHERE id = ?");
+        if (!$delete_stmt) {
+            throw new Exception('Failed to prepare vehicle delete statement.');
+        }
+        $delete_stmt->bind_param('i', $id);
+        if (!$delete_stmt->execute()) {
+            $error = $delete_stmt->error;
+            $delete_stmt->close();
+            throw new Exception("Delete failed: {$error}");
+        }
+        $deleted_rows = (int) $delete_stmt->affected_rows;
+        $delete_stmt->close();
+
+        if ($deleted_rows < 1) {
+            throw new Exception('Vehicle not found.');
+        }
+
+        $con->commit();
+    } catch (Throwable $error) {
+        $con->rollback();
+        send_json(['success' => false, 'message' => $error->getMessage()], 500);
+    }
+
+    $safe_slug = normalize_slug((string) ($existing['slug'] ?? ''));
+    if ($safe_slug !== '') {
+        $image_dir = __DIR__ . '/../assets/images/vehicles';
+        foreach (['avif', 'webp', 'jpg', 'jpeg', 'png'] as $ext) {
+            $path = $image_dir . '/' . $safe_slug . '.' . $ext;
+            if (file_exists($path)) {
+                @unlink($path);
+            }
+        }
+    }
+
+    send_json([
+        'success' => true,
+        'deleted_id' => $id,
+        'message' => 'Vehicle deleted.'
+    ]);
 }
 
 $vehicle_payload = $data['vehicle'] ?? [];

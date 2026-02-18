@@ -663,6 +663,7 @@ $discounts_config = [
                     <div class="admin-actions">
                         <button type="button" class="continue-btn admin-save" disabled>Save Changes</button>
                         <button type="button" class="admin-reset">Reset</button>
+                        <button type="button" class="admin-delete">Delete Vehicle</button>
                         <span id="vehicle-status" aria-live="polite"></span>
                     </div>
                 </form>
